@@ -1,10 +1,8 @@
 package util
 
-func FindElementInSlice(element int, slice []int) int {
-	for i := range slice {
-		if slice[i] == element {
-			return i
-		}
+func FindElementInSlice(element string, target map[string]int) bool {
+	if target[element] != 0 {
+		return true
 	}
-	return -1
+	return false
 }
