@@ -1,7 +1,5 @@
 package model
 
-import "bloodOnTheClockTower/util"
-
 //type GoodCharacter struct {
 //	Id int
 //	BaseCharacter
@@ -31,7 +29,7 @@ type BaseCharacter struct {
 	DeadReason      int             //死亡原因 未死亡为“”
 	DeadTime        int             //死亡时间 早上，黄昏，晚上
 	ExactTime       int             //死亡具体时间
-	Neighbors       []BaseCharacter //邻居
+	Neighbors       []*BaseCharacter //邻居
 }
 
 var CharacterKindMap = map[string]int{
@@ -102,19 +100,3 @@ const (
 	Dawn    = 2
 	Night   = 3
 )
-
-// 判断角色是否醉酒
-func isCharacterDrunk(character *BaseCharacter) bool {
-	if character.CharacterStatus == nil {
-		return false
-	}
-	return util.FindElementInSlice(DrunkStatus, character.CharacterStatus)
-}
-
-// 判断角色是否中毒
-func isCharacterPoisoned(character *BaseCharacter) bool {
-	if character.CharacterStatus == nil {
-		return false
-	}
-	return util.FindElementInSlice(PoisonedStatus, character.CharacterStatus)
-}
