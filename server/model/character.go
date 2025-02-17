@@ -29,7 +29,7 @@ type BaseCharacter struct {
 	DeadReason      int             //死亡原因 未死亡为“”
 	DeadTime        int             //死亡时间 早上，黄昏，晚上
 	ExactTime       int             //死亡具体时间
-	Neighbors       []*BaseCharacter //邻居
+	Neighbors       []BaseCharacter //邻居
 }
 
 var CharacterKindMap = map[string]int{

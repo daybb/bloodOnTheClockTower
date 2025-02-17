@@ -1,9 +1,27 @@
-package bloodOnTheClockTower
+package main
 
 import (
+	"bloodOnTheClockTower/handler"
 	"bloodOnTheClockTower/model"
 	"fmt"
+	"log"
+	"net/http"
 )
+
+var character = []model.BaseCharacter{}
+var characterMap = map[int]*model.BaseCharacter{}
+
+// run main start a websocket server
+// create room create a room from request body, can do it by default config instead
+func main() {
+	http.HandleFunc("/home", handler.LoadHome)
+	http.HandleFunc("/ws", handler.HandleWebSocket)
+	// 等待开始页
+	http.HandleFunc("/room/", handler.LoadRoom)
+	// 游戏中页
+	http.HandleFunc("/game/", handler.LoadGame)
+	log.Fatal(http.ListenAndServe(":8080", nil))
+}
 
 // set up characters,八人局为例子，随机抽取村民5人、外来者1人，爪牙1人，恶魔1人
 func assign() ([]model.BaseCharacter, map[int]*model.BaseCharacter) {
@@ -57,4 +75,8 @@ func assign() ([]model.BaseCharacter, map[int]*model.BaseCharacter) {
 	}
 	fmt.Println(character)
 	return character, characterMap
+}
+
+func init() {
+	character, characterMap = assign()
 }

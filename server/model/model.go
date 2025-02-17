@@ -7,6 +7,12 @@ import (
 var cfg *Config
 var once sync.Once
 
+const (
+	Wait       = "等待开始" // 等待开始
+	Processing = "游戏中"  // 游戏中
+	After      = "复盘中"  // 复盘
+)
+
 func init() {
 	once.Do(func() {
 		cfg = &Config{}
@@ -20,13 +26,13 @@ func GetConfig() *Config {
 
 type Config struct {
 	Rooms        []Room
-	HomeConnPool *sync.Map // 首页 玩家长连接 [playId]conn
+	HomeConnPool *sync.Map // 首页 玩家长连接 [playId]conn. 在list room的时候store conn
 }
 
 type Room struct {
-	Id        string    `json:"id"`
-	Name      string    `json:"name"`
-	Password  string    `json:"password"`
+	Id   string `json:"id"`
+	Name string `json:"name"`
+	//Password  string    `json:"password"`
 	Host      string    `json:"host"`
 	CreatedAt string    `json:"createdAt"`
 	Status    string    `json:"status"` // 等待开始，游戏中，复盘中
@@ -60,11 +66,11 @@ type Player struct {
 	Index         int         `json:"index"`
 	Waiting       bool        `json:"waiting"` // 是否等待开始
 	Quited        bool        `json:"quited"`  // 是否已经退出
-	Character     string      `json:"character"`
-	CharacterType string      `json:"characterType"`
 	State         PlayerState `json:"state"`
 	Ready         PlayerReady `json:"ready"`
 	Log           string      `json:"log"`
+	PositionId    int         `json:"positionId"` // 位置id
+	BaseCharacter BaseCharacter `json:"baseCharacter"` //角色信息
 }
 
 type PlayerState struct {
