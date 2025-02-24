@@ -10,7 +10,7 @@ func Test_calculateNeighbor(t *testing.T) {
 	all := []*model.BaseCharacter{}
 	characterMap := make(map[int]*model.BaseCharacter)
 	for i := 0; i < 8; i++ {
-		if i == 7  {
+		if i == 7 {
 			all = append(all, &model.BaseCharacter{
 				Id:              i,
 				CharacterName:   "",
@@ -33,7 +33,7 @@ func Test_calculateNeighbor(t *testing.T) {
 				ExactTime:       0,
 				Neighbors:       nil,
 			}
-		}else {
+		} else {
 			all = append(all, &model.BaseCharacter{
 				Id:              i,
 				CharacterName:   "",
@@ -59,14 +59,38 @@ func Test_calculateNeighbor(t *testing.T) {
 		}
 
 	}
-	for k,v := range characterMap{
-		fmt.Println(k,*v)
+	for k, v := range characterMap {
+		fmt.Println(k, *v)
 	}
-	Execute(characterMap[2],8,1,characterMap)
+	Execute(characterMap[2], 8, 1, characterMap)
 	fmt.Println("done")
-	for k,v := range characterMap{
-		fmt.Println(k,*v)
+	for k, v := range characterMap {
+		fmt.Println(k, *v)
 	}
 	//resp := CalculateNeighbors(all)
 	//fmt.Println(resp)
+}
+
+type A struct {
+	A B
+}
+
+type B struct {
+	B int
+}
+
+func Test_point(t *testing.T) {
+	a := &A{A: B{B: 1}}
+	f1(a)
+	fmt.Println(a)
+}
+
+func f1(a *A) {
+	b := f2(a.A)
+	a.A = b
+}
+
+func f2(b B) B {
+	b.B = 2
+	return b
 }

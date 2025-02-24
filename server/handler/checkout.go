@@ -13,8 +13,8 @@ func checkoutNight(mux *sync.Mutex, game *model.Room) {
 	mux.Lock()
 	defer mux.Unlock()
 
-	var msgPlayer = "您"
-	var msgAll = ""
+	//var msgPlayer = "您"
+	//var msgAll = ""
 
 	// 承载技能释放者对象的池
 	castPoolObj := map[*model.Player][]int{}
@@ -37,23 +37,23 @@ func checkoutNight(mux *sync.Mutex, game *model.Room) {
 	// 结算第一夜信息
 	if game.State.Stage == 0 {
 		FirstNight(game)
-		// ------- 结算 -------
 		msg := ""
-		// 结算本阶段
-		//if killed == nil {
 		msg += "今夜是 平安夜\n"
-		//} else {
-		//	msg += fmt.Sprintf("今夜 [%s] 死亡\n", killed.Name)
-		//}
-		// 拼接日志
 		for i := range game.Players {
 			game.Players[i].Log += msg
 		}
 		game.Log += msg
-		// 发送日志
 		broadcast(game)
-		//// 结算本局
-		//checkout(game, game.Executed)
+		return
+	}
+	// 结算除第一夜信息
+	if game.Result == "" {
+		game.State.Night = true
+		game.State.Stage += 1
+		msg := fmt.Sprintf("第%d天，入夜~\n", game.State.Day+1)
+		OtherNight(game)
+		game.Log += msg
+		broadcast(game)
 	}
 }
 
@@ -170,4 +170,23 @@ func FirstNight(game *model.Room) {
 	// todo 祖母技能
 	// todo 侍女技能
 	return
+}
+
+// 夜晚 纯粹的状态变更，不含技能释放
+func OtherNight(game *model.Room) {
+	//设定current time
+	game.CurTime = 23
+	//距离游戏开始的时间。游戏是从晚上开始的，第二个晚上就是24，第三个晚上是48
+	fromStartTime := game.State.Stage * 24
+	//消除可以消除的负面状态或者守护效果
+	for i := range game.Players {
+		if len(game.Players[i].BaseCharacter.CharacterStatus) > 0 {
+			for k, v := range game.Players[i].BaseCharacter.CharacterStatus {
+				if v <= fromStartTime {
+					delete(game.Players[i].BaseCharacter.CharacterStatus, k)
+				}
+			}
+		}
+	}
+
 }

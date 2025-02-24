@@ -61,6 +61,11 @@ var OncePerGameSkillMap = map[string]bool{
 	"Professor": true, "Pacifist": true, "Fool": true, "Assassin": true, "Shabaloth": true,
 }
 
+// 角色发动技能顺序
+var CharacterCastSkillOrder = []string{"Sailor", "Innkeeper", "Courtier", "Gambler", "DevilsAdvocate",
+	"Lunatic", "Exorcist", "Zombuul", "Pukka", "Shabaloth", "Po", "Assassin", "Godfather", "Professor",
+	"Gossip", "Tinker", "Moonchild", "Grandmother", "Chambermaid"}
+
 // 阵营
 const (
 	Good     = 1 //村民

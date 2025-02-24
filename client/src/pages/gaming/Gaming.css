@@ -1,0 +1,291 @@
+#GAMING {
+    position: relative;
+    /*background-color: #357e5b;*/
+    background-color: black;
+    color: white;
+    width: 100vw;
+    /*max-width: 1200px;*/
+    min-width: 375px;
+    min-height: 100vh;
+
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+    align-items: flex-start;
+
+    /*background-image: url('../../assets/images/bg/day.png'); !* 替换 'image.jpg' 为你的背景图片的路径 *!*/
+    background-size: cover; /* 控制背景图片的尺寸，cover 表示图片会被拉伸或压缩以填充整个元素 */
+    background-position: center; /* 控制背景图片的位置，center 表示图片会在元素的中心位置 */
+}
+
+#GAMING .layout {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
+#GAMING .north .btn {
+    margin: 10px;
+}
+
+#GAMING .south div {
+    font-size: 16px;
+}
+
+#GAMING .ant-switch-checked {
+    background-color: cornflowerblue !important;
+}
+
+#GAMING .title {
+    font-size: 20px;
+    margin-top: 10px;
+}
+
+#GAMING .small-btn {
+    font-size: 20px;
+    width: fit-content;
+    height: fit-content;
+}
+
+#GAMING .mini-btn {
+    font-size: 20px;
+    width: fit-content;
+    height: 50px;
+    border-radius: 50px;
+    line-height: 10px;
+}
+
+#GAMING .skill-btn {
+    width: 70px;
+    height: 70px;
+}
+
+#GAMING .skill-btn svg {
+    width: 30px;
+    height: 30px;
+}
+
+#GAMING .mini-btn span {
+    padding: 0 !important;
+}
+
+#GAMING .place {
+    padding: 10px;
+    margin: 0;
+}
+
+#GAMING .place-sit {
+    border: 0;
+    width: fit-content;
+    height: fit-content;
+}
+
+#GAMING .individual-name:hover {
+    cursor: pointer;
+    color: white;
+}
+
+#GAMING .info-wrap {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    flex: 1;
+    overflow-y: auto;
+}
+
+#GAMING .my-info {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+    align-items: flex-start;
+
+    height: 96px;
+}
+
+#GAMING .my-info span {
+    font-size: 16px;
+    padding: 4px 4px 4px 10px;
+}
+
+#GAMING .west {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+#GAMING .east {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+
+    padding: 5px 0;
+    height: 100%;
+    overflow-y: auto;
+}
+
+#GAMING .south {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+    flex-wrap: nowrap;
+    margin: 10px 0;
+}
+
+#GAMING .south > div {
+    background-color: rgba(255,255,255,0.2);
+    border-radius: 10px;
+}
+
+/* 竖屏样式 */
+@media screen and (orientation: portrait) {
+    #GAMING .west {
+        width: 100%;
+    }
+    #GAMING .east {
+        width: 100%;
+    }
+    #GAMING {
+        height: fit-content;
+    }
+}
+
+/* 横屏样式 */
+@media screen and (orientation: landscape) {
+    #GAMING .west {
+        width: 50%;
+        height: 97vh;
+    }
+    #GAMING .east {
+        flex: 1;
+        height: 97vh;
+    }
+    #GAMING {
+        height: 100vh;
+        overflow-y: auto;
+    }
+    #GAMING .title,
+    #GAMING .south div {
+        font-size: 16px;
+    }
+}
+
+#GAMING .individual {
+    margin: 0 5px 0 0;
+    padding: 5px;
+}
+
+#GAMING .individual-tag {
+    font-size: 10px;
+    padding: 0 2px;
+    border-radius: 20px;
+}
+
+#GAMING .tag-tou {
+    background-color: forestgreen;
+}
+
+#GAMING .tag-ti {
+    background-color: dodgerblue;
+}
+
+#GAMING .tag-bei {
+    background-color: palevioletred;
+}
+
+#GAMING .seat-selected {
+    background-color: chocolate;
+}
+
+#GAMING .east {
+    font-size: 16px;
+    padding: 10px;
+
+    background-color: rgba(255,255,255,0.2);
+    border-radius: 15px;
+}
+
+/*彩色日志*/
+#GAMING .highlight {
+    padding: 0 5px;
+}
+
+#GAMING .highlight-number {
+    color: limegreen;
+    font-weight: bold;
+}
+
+#GAMING .highlight-player {
+    color: black;
+    background-color: yellow;
+}
+
+#GAMING .highlight-skill {
+    color: deepskyblue;
+    font-weight: bold;
+}
+
+#GAMING .highlight-skill-result {
+    color: black;
+    background-color: greenyellow;
+}
+
+#GAMING .highlight-severe {
+    color: red;
+    font-weight: bold;
+}
+
+#GAMING .highlight-nominate {
+    color: chocolate;
+    font-weight: bold;
+}
+
+#GAMING .highlight-vote {
+    color: orchid;
+    font-weight: bold;
+}
+
+#GAMING .highlight-dead {
+    text-decoration: line-through;
+}
+
+#GAMING .highlight-dead-cant-be-selected {
+    background-color: gray;
+    color: black;
+}
+
+#GAMING .highlight-dead:hover {
+    color: black !important;
+    cursor: default;
+}
+
+/*tag显示*/
+#GAMING .tag-hidden {
+    /*visibility: hidden;*/
+    display: none;
+}
+
+/*胜利动画*/
+#GAMING .gif {
+    position: fixed;
+    width: auto;
+    height: 100%;
+    top: -80px;
+    z-index: 999;
+    display: none;
+}
+
+#GAMING .gif-visible {
+    display: block !important;
+}
