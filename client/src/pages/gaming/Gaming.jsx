@@ -33,9 +33,9 @@ function Gaming() {
         establishConn()
     }, [])
     const establishConn = () => {
-        console.log("pid",localStorage.getItem("PlayerID"))
+        console.log("pid", sessionStorage.getItem("PlayerID"))
         // 获取game 长连接
-        socket = new WebSocket(`${config.beBaseUrl}/game/${roomId}/${localStorage.getItem("PlayerID")}`)
+        socket = new WebSocket(`${config.beBaseUrl}/game/${roomId}/${sessionStorage.getItem("PlayerID")}`)
         socket.onopen = function() {
             loadGame()
         }
@@ -95,10 +95,10 @@ function Gaming() {
     const findPlayer = () => {
         if (game !== null) {
             for (let i = 0; i < game.players.length; i++) {
-                if (game.players[i].id ===  localStorage.getItem("PlayerID")) {
+                if (game.players[i].id === sessionStorage.getItem("PlayerID")) {
                     return {
                         name: game.players[i].name,
-                        character: game.players[i].character,
+                        character: game.players[i].baseCharacter.character_name,
                         characterType: game.players[i].characterType,
                     }
                 }
@@ -161,7 +161,7 @@ function Gaming() {
     const loadPersonalLog = async () => {
         if (game) {
             for (let i = 0; i < game.players.length; i++) {
-                if (game.players[i].id === localStorage.getItem("PlayerID")) {
+                if (game.players[i].id === sessionStorage.getItem("PlayerID")) {
                     replaceLog(game.players[i].log, ...wordClassPairs)
                     break
                 }
@@ -172,7 +172,7 @@ function Gaming() {
     const getMe = (game) => {
         let me
         for (let i = 0; i < game.players.length; i++) {
-            if (game.players[i].id === localStorage.getItem("PlayerID")) {
+            if (game.players[i].id === sessionStorage.getItem("PlayerID")) {
                 me = game.players[i]
                 break
             }
@@ -750,7 +750,7 @@ function Gaming() {
                 break
             }
             return "您只能选1个人反向通灵"
-        case "杀手":
+        case "Assassin":
             if (game.state.night) {
                 return "夜晚不能开枪"
             }

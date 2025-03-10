@@ -21,15 +21,15 @@ package model
 //}
 
 type BaseCharacter struct {
-	Id              int
-	CharacterName   string          //角色名称。 如魄
-	CharacterKind   int             //角色阵营。如村民
-	CharacterStatus map[string]int  //todo 角色自身状态，如醉酒，中毒{"drunk":"时间戳"}
-	IsDead          bool            //是否死亡
-	DeadReason      int             //死亡原因 未死亡为“”
-	DeadTime        int             //死亡时间 早上，黄昏，晚上
-	ExactTime       int             //死亡具体时间
-	Neighbors       []BaseCharacter //邻居
+	Id              int             `json:"id,omitempty"`
+	CharacterName   string          `json:"character_name,omitempty"`   //角色名称。 如魄
+	CharacterKind   int             `json:"character_kind,omitempty"`   //角色阵营。如村民
+	CharacterStatus map[string]int  `json:"character_status,omitempty"` //todo 角色自身状态，如醉酒，中毒{"drunk":"时间戳"}
+	IsDead          bool            `json:"is_dead,omitempty"`          //是否死亡
+	DeadReason      int             `json:"dead_reason,omitempty"`      //死亡原因 未死亡为“”
+	DeadTime        int             `json:"dead_time,omitempty"`        //死亡时间 早上，黄昏，晚上
+	ExactTime       int             `json:"exact_time,omitempty"`       //死亡具体时间
+	Neighbors       []BaseCharacter `json:"neighbors,omitempty"`        //邻居
 }
 
 var CharacterKindMap = map[string]int{

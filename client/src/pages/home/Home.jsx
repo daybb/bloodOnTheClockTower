@@ -10,13 +10,12 @@ import {sleep} from "../../utils/time"
 import config from "../../config/config"
 import bat from "../../assets/video/bat.gif"
 
-//前端维护一个map，对应playerName-playerId，用户首次进入list_rooms的时候会生成一个uuid作为playerId，然后绑定用户名和playerId
-// if (localStorage.getItem("PlayerID") === null) {
-//     localStorage.setItem("PlayerID", genShortUUID())
-// }
-// if (localStorage.getItem("PlayerName") === null) {
-//     localStorage.setItem("PlayerName", "好人1号-" + genShortUUID().slice(-6))
-// }
+if (sessionStorage.getItem("PlayerID") === null) {
+    sessionStorage.setItem("PlayerID", genShortUUID())
+}
+if (sessionStorage.getItem("PlayerName") === null) {
+    sessionStorage.setItem("PlayerName", "好人1号-" + genShortUUID().slice(-6))
+}
 
 const Context = React.createContext({
     name: "Default",
@@ -47,7 +46,7 @@ function Home() {
     const loadRoomList = () => {
         let data = {
             action: "list_rooms",
-            payload: localStorage.getItem("PlayerID"),
+            payload: sessionStorage.getItem("PlayerID"),
         }
         socketHome.send(JSON.stringify(data))
     }
@@ -67,13 +66,13 @@ function Home() {
 
     const [open1, setOpen1] = useState(false)
     const showDrawer1 = room => {
-        // console.log("room is: ", room)
+        console.log("name is: ", sessionStorage.getItem("PlayerName"))
         // console.log("room list is: ", roomList)
         setOpen1(true)
         setRoomId(roomId)
         setRoomName(roomName)
         setRoomSelected(room)
-        setPlayerName(localStorage.getItem("PlayerName"))
+        setPlayerName(sessionStorage.getItem("PlayerName"))
     }
     const onClose1 = () => {
         setOpen1(false)
@@ -107,7 +106,7 @@ function Home() {
     const [roomId, setRoomId] = useState("2025")
     const [roomName, setRoomName] = useState("摸摸鱼")
     const [error, setError] = useState('');
-    // console.log(localStorage.getItem("PlayerID"))
+    // console.log(sessionStorage.getItem("PlayerID"))
     const handsetSeatPosition = (event) => {
         const value = event.target.value;
         if (/^-?\d*$/.test(value)) { // 检查是否为整数
@@ -121,7 +120,7 @@ function Home() {
 
     const handlePlayerNameChange = (event) => {
         setPlayerName(event.target.value)
-        localStorage.setItem("PlayerName", event.target.value)
+        sessionStorage.setItem("PlayerName", event.target.value)
     }
 
     const joinRoom = () => {
@@ -156,7 +155,7 @@ function Home() {
         socketHome.onmessage = function (event) {
             // setRoomList(JSON.parse(event.data))
         }
-        localStorage.setItem("PlayerID", playerInfo.id)
+        sessionStorage.setItem("PlayerID", playerInfo.id)
         jump(roomId,playerInfo.id)
     }
     const [api, contextHolder] = notification.useNotification()

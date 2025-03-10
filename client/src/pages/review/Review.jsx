@@ -32,7 +32,7 @@ function Review() {
     const reviewGame = () => {
         let data = {
             action: "review_game",
-            payload: localStorage.getItem("PlayerID"),
+            payload: sessionStorage.getItem("PlayerID"),
         }
         socket.send(JSON.stringify(data))
     }
@@ -64,7 +64,7 @@ function Review() {
     const backToRoom = () => {
         let data = {
             action: "back_to_room",
-            payload: localStorage.getItem("PlayerID"),
+            payload: sessionStorage.getItem("PlayerID"),
         }
         socket.send(JSON.stringify(data))
     }

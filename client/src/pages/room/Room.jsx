@@ -35,12 +35,12 @@ function Room() {
             console.error("WebSocket error:", error)
         }
         // console.log("host: ",room.host)
-        console.log("playerId: ",localStorage.getItem("PlayerID"))
+        console.log("playerId: ",sessionStorage.getItem("PlayerID"))
     }
     const loadRoom = () => {
         let data = {
             action: "list_players",
-            payload: localStorage.getItem("PlayerID"),
+            payload: sessionStorage.getItem("PlayerID"),
         }
         socket.send(JSON.stringify(data))
     }
@@ -56,7 +56,7 @@ function Room() {
     const findPlayerName = () => {
         if (room !== null) {
             for (let i = 0; i < room.players.length; i++) {
-                if (room.players[i].id ===  localStorage.getItem("PlayerID")) {
+                if (room.players[i].id === sessionStorage.getItem("PlayerID")) {
                     return room.players[i].name
                 }
             }
@@ -67,7 +67,7 @@ function Room() {
     const quitRoom = () => {
         let data = {
             action: "quit_room",
-            payload: localStorage.getItem("PlayerID"),
+            payload: sessionStorage.getItem("PlayerID"),
         }
         socket.send(JSON.stringify(data))
         jumpToHome()
