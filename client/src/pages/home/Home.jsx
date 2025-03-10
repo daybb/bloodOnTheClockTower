@@ -14,7 +14,7 @@ if (sessionStorage.getItem("PlayerID") === null) {
     sessionStorage.setItem("PlayerID", genShortUUID())
 }
 if (sessionStorage.getItem("PlayerName") === null) {
-    sessionStorage.setItem("PlayerName", "好人1号-" + genShortUUID().slice(-6))
+    sessionStorage.setItem("PlayerName", "好人10号-" + genShortUUID().slice(-6))
 }
 
 const Context = React.createContext({
