@@ -72,19 +72,19 @@ func LoadGame(w http.ResponseWriter, r *http.Request) {
 			vote(mux, game, playerId)
 		//入夜，包括第一夜
 		case "checkout_night":
-			if playerId == "1" {
-				checkoutNight(mux, game)
-			}
+			//if playerId == "1" {
+			checkoutNight(mux, game)
+			//}
 		//公投结束之后进行处决
 		case "execute":
-			if playerId == "1" {
-				checkoutDay(mux, game)
-			}
-		// 提名后结束投票
+			//if playerId == "1" {
+			checkoutDay(mux, game)
+			//}
+		// 提名后结束投票,退出投票环节
 		case "end_voting":
-			if playerId == "1" {
-				endVoting(mux, game)
-			}
+			//if playerId == "1" {
+			endVoting(mux, game)
+			//}
 			//case "quit_game":
 			//	quitGame(mux, game, playerId)
 			//}
@@ -142,7 +142,7 @@ func assign() ([]model.BaseCharacter, map[int]model.BaseCharacter) {
 			CharacterStatus: nil,
 			IsDead:          false,
 		})
-		characterMap[k] = model.BaseCharacter{
+		characterMap[k+1] = model.BaseCharacter{
 			Id:              k,
 			CharacterName:   v,
 			CharacterKind:   model.CharacterKindMap[v],
@@ -186,6 +186,9 @@ func initGame(mux *sync.Mutex, game *model.Room, playerId string, conn *websocke
 			newPlayer.Name = player.Name
 			newPlayer.Index = player.Index
 			newPlayer.PositionId = player.PositionId
+			newPlayer.Ready.Nominate = true
+			newPlayer.Ready.Nominated = true
+			newPlayer.Ready.Vote = true
 			game.Players[i] = newPlayer
 		}
 		// 初始化玩家状态 依赖身份

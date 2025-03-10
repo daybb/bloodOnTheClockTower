@@ -3,7 +3,6 @@ package handler
 import (
 	"bloodOnTheClockTower/model"
 	"encoding/json"
-	"fmt"
 	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
@@ -75,7 +74,6 @@ func listRooms(playerId string, conn *websocket.Conn) {
 		return
 	}
 	cfg.HomeConnPool.Range(func(key, value any) bool {
-		fmt.Printf("所有连接:%+v\n", key)
 		return true
 	})
 }

@@ -36,14 +36,14 @@ func nominate(mux *sync.Mutex, game *model.Room, playerId string, targets []stri
 
 	for i, player := range game.Players {
 		if player.Id == playerId && player.Ready.Nominate && !player.BaseCharacter.IsDead && !game.State.VotingStep {
-			for j, player := range game.Players {
-				if targets[0] == player.Id && player.Ready.Nominated { // 死了也能被提名
+			for j, target := range game.Players {
+				if targets[0] == target.Id && target.Ready.Nominated { // 死了也能被提名
 					msg += fmt.Sprintf("[%s] ", player.Name)
 					game.Players[i].Ready.Nominate = false  // 发动提名者不能再提名
 					game.Players[j].Ready.Nominated = false // 被提名者不能再被提名
-					game.Nominated = &game.Players[j]
+					game.Nominated = &target
 					game.VotePool[game.Nominated.Id] = 0
-					msg += fmt.Sprintf("提名 [%s] 进行处决公投\n", player.Name)
+					msg += fmt.Sprintf("提名 [%s] 进行处决公投\n", target.Name)
 					break
 				}
 			}
@@ -54,6 +54,8 @@ func nominate(mux *sync.Mutex, game *model.Room, playerId string, targets []stri
 		game.Players[i].Log += msg
 	}
 	game.Log += msg
+	//进入投票处决环节
+	game.State.VotingStep = true
 	// 发送日志
 	broadcast(game)
 }

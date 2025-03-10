@@ -8,7 +8,7 @@ import (
 )
 
 func execute(game *model.Room) {
-	var msg string
+	var msg, playerMsg string
 	var executeeVoteCount int
 	var allCharacter []*model.BaseCharacter
 	var isDead bool
@@ -18,7 +18,7 @@ func execute(game *model.Room) {
 		//game.Executed.State.Dead = true
 		//game.Executed.Ready.Nominate = false
 		//game.Executed.Ready.Nominated = false
-		msg += fmt.Sprintf("处决结果：[%s] 获得 %d 票，被处决，死亡\n", game.Executed.Name, executeeVoteCount)
+		msg += fmt.Sprintf("处决结果：[%s] 获得 %d 票，被处决\n", game.Executed.Name, executeeVoteCount)
 		//弄臣发动技能
 		if game.Executed.BaseCharacter.CharacterName == "Fool" {
 			msgs, foolDead := characterSkills.WillNotDie(game.Executed.BaseCharacter, game.CurTime)
@@ -29,7 +29,8 @@ func execute(game *model.Room) {
 		if game.Executed.BaseCharacter.CharacterKind == model.Good || game.Executed.BaseCharacter.CharacterKind == model.Outsider {
 			msgs, isDeadAfter := characterSkills.ExecutedGoodStillLive(game.Executed.BaseCharacter)
 			isDead = isDeadAfter
-			msg += msgs
+			playerMsg += msgs
+			msg += "和平主义者发动技能，被处决的好人仍然存活"
 		}
 		//吟游诗人发动技能
 		if game.Executed.BaseCharacter.CharacterKind == model.Minion {
@@ -39,6 +40,7 @@ func execute(game *model.Room) {
 			//吟游诗人发动技能
 			msgs, isMinstrelAct := characterSkills.DrunkenEveryone(&game.Executed.BaseCharacter, allCharacter, game.CurTime)
 			if isMinstrelAct {
+				playerMsg += msgs
 				msg += msgs
 			}
 		}
@@ -54,15 +56,22 @@ func execute(game *model.Room) {
 	} else {
 		msg += "处决结果：无人被处决\n"
 	}
+	//投票池置空
+	game.VotePool = map[string]int{}
+	//被提名置空
+	game.Nominated = nil
+	//被处决者置空
+	game.Executed = nil
 	for i := range game.Players {
-		game.Players[i].Log += msg
+		game.Players[i].Log += playerMsg
 	}
 	game.Log += msg
-
+	//结束投票处决环节
+	game.State.VotingStep = false
 	// 发送日志
 	broadcast(game)
-	// 立即结算
-	checkout(game, game.Executed)
+	// todo 立即结算
+	//checkout(game, game.Executed)
 }
 
 func findExecutee(game *model.Room) (*model.Player, int) {

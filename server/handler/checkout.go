@@ -63,7 +63,7 @@ func checkoutDay(mux *sync.Mutex, game *model.Room) {
 	// 结算处决
 	execute(game)
 	// 结算本局
-	checkout(game, game.Executed)
+	//checkout(game, game.Executed)
 }
 
 // checkout 结算本局
@@ -137,12 +137,12 @@ func ShowDevilAndMinion(game *model.Room) (minionId []string, devilId []string) 
 			minionId = append(minionId, v.Id)
 		}
 	}
-	for _, v := range game.Players {
+	for k, v := range game.Players {
 		if v.BaseCharacter.CharacterKind == model.Devil {
-			v.Log += fmt.Sprintf("爪牙是座位号为%v，请互相确认身份", minionId)
+			game.Players[k].Log += fmt.Sprintf("爪牙是座位号为%v，请互相确认身份。\n", minionId)
 			emit(game, v.Id)
 		} else if v.BaseCharacter.CharacterKind == model.Minion {
-			v.Log += fmt.Sprintf("恶魔是座位号为%v，请互相确认身份", devilId)
+			game.Players[k].Log += fmt.Sprintf("恶魔是座位号为%v，请互相确认身份。\n", devilId)
 			emit(game, v.Id)
 		}
 	}
@@ -169,6 +169,10 @@ func FirstNight(game *model.Room) {
 	// todo 普卡技能
 	// todo 祖母技能
 	// todo 侍女技能
+	//游戏进度+1
+	game.State.Stage++
+	game.State.Night = false
+	game.CurTime = model.Morning
 	return
 }
 

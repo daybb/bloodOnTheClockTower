@@ -101,7 +101,7 @@ const (
 
 // 死亡时间
 const (
-	Morning = 1
-	Dawn    = 2
-	Night   = 3
+	Morning = 8
+	Dawn    = 17
+	Night   = 23
 )

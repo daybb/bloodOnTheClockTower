@@ -15,7 +15,7 @@ func ExecutedGoodStillLive(executedCharacter model.BaseCharacter) (string, bool)
 	if executedCharacter.CharacterKind == model.Good || executedCharacter.CharacterKind == model.Outsider && model.OncePerGameSkillMap["Pacifist"] {
 		log.Println("和平主义者发动技能，被处决的好人仍然存活")
 		model.OncePerGameSkillMap["Pacifist"] = false
-		msg += "和平主义者发动技能，被处决的好人仍然存活\n"
+		msg += "被处决的人仍然存活\n"
 		return msg, false
 	}
 	return msg, true

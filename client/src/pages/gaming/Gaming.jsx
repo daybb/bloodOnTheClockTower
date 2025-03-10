@@ -1,6 +1,6 @@
 import {useNavigate, useParams} from "react-router-dom"
-import {Button, Modal, Switch, notification, Drawer} from "antd"
-import {FireOutlined, RollbackOutlined, SmileFilled, SmileOutlined, StopOutlined, ReadOutlined} from "@ant-design/icons"
+import {Button, Modal, Switch, notification, Drawer,Radio, Space} from "antd"
+import {FireOutlined, RollbackOutlined, ReadOutlined} from "@ant-design/icons"
 import React, {useEffect, useState, useMemo} from "react"
 import "./Gaming.css"
 import {remove} from "../../utils/array"
@@ -24,6 +24,12 @@ let evilWinAudio = new Audio("/audio/evil_win.wav")
 let castLock = false // 入夜后给施放技能的时间，后端没有，只在前端限制，因为只限制主机
 
 function Gaming() {
+    // 添加 Gambler 角色的状态
+    const [selectedCharacter, setSelectedCharacter] = useState(null)
+    const characterOptions = [
+        "小恶魔", "间谍", "男爵", "下毒者", "刺客", 
+        "占卜师", "厨师", "共情者", "送葬者", "管家"
+    ]
     const navigate = useNavigate()
     let { roomId } = useParams()
 
@@ -33,7 +39,6 @@ function Gaming() {
         establishConn()
     }, [])
     const establishConn = () => {
-        console.log("pid", sessionStorage.getItem("PlayerID"))
         // 获取game 长连接
         socket = new WebSocket(`${config.beBaseUrl}/game/${roomId}/${sessionStorage.getItem("PlayerID")}`)
         socket.onopen = function() {
@@ -100,6 +105,7 @@ function Gaming() {
                         name: game.players[i].name,
                         character: game.players[i].baseCharacter.character_name,
                         characterType: game.players[i].characterType,
+                        positionId: game.players[i].positionId
                     }
                 }
             }
@@ -292,7 +298,18 @@ function Gaming() {
                         })
                     }
                 </div>
-                <Button className="btn mini-btn skill-btn" onClick={cast}><FireOutlined /></Button>
+                <Button className="btn small-btn" onClick={cast}>
+                    {game && findPlayer().character ?
+                        (findPlayer().character === "Assassin" ? "刺杀" :
+                            findPlayer().character === "Gambler" ? "猜角色" :
+                                findPlayer().character === "占卜师" ? "占卜" :
+                                    findPlayer().character === "管家" ? "认主" :
+                                        findPlayer().character === "僧侣" ? "守护" :
+                                            findPlayer().character === "小恶魔" ? "杀害" :
+                                                findPlayer().character === "守鸦人" ? "通灵" :
+                                                    "发动技能"): <FireOutlined />
+                    }
+                </Button>
                 <div>
                     {
                         Array.from({ length: game ? game.players.length / 2 : 15 / 2 }, (_, index) => {
@@ -367,6 +384,7 @@ function Gaming() {
         }
     }
     const checkReadyToToggleNight = () => {
+        //第一个白天可以不需要发动技能
         // 死亡或者已放过技能都是ready
         let ready = true
         for (let i = 0; i < game.players.length; i++) {
@@ -376,7 +394,7 @@ function Gaming() {
         return !game.state.votingStep
             && !castLock
             && ready // TODO 测试时，可注释
-            || game.state.stage === 0
+            || game.state.stage === 0 || game.state.stage ===1
     }
 
     // 游戏过程
@@ -442,6 +460,22 @@ function Gaming() {
     }
     const emitEndVoting = () => {
         let req = JSON.stringify({action: "end_voting", targets: []})
+        socket.send(req) // 会在后端更新stage、night
+    }
+    //首次入夜
+    const emitCheckOutFirstNight = () => {
+        let req = JSON.stringify({action: "checkout_night", targets: []})
+        socket.send(req) // 会在后端更新stage、night
+    }
+    //处决
+    const emitExecute = () => {
+        if (game && game.state.votingStep) {
+            emitEndVoting()
+        } else {
+            openEndVotingNotification("topRight")
+        }
+
+        let req = JSON.stringify({action: "execute", targets: []})
         socket.send(req) // 会在后端更新stage、night
     }
 
@@ -546,49 +580,62 @@ function Gaming() {
     const [castModalContent, setCastModalContent] = useState("抱歉，您无法发动技能")
     const showCastModal = () => {
         setIsCastModalOpen(true)
-        setCastModalContent("抱歉，您无法发动技能") // 将modal的内容重新初始化，防止错乱
+        setCastModalContent("确定发动技能吗") // 将modal的内容重新初始化，防止错乱
         let me = getMe(game)
-        if (game.state.stage === 1 &&
-            (me.character === "下毒者" ||
-            me.character === "占卜师" ||
-            me.character === "管家")) {
-            setCastModalContent(genCastModalContent(me))
-            return
-        }
-        if (game.state.stage % 2 === 1 && game.state.stage !== 1 &&
-            (me.character === "下毒者" ||
-                me.character === "僧侣" ||
-                me.character === "小恶魔" ||
-                me.character === "守鸦人" ||
-                me.character === "占卜师" ||
-                me.character === "管家")) {
-            setCastModalContent(genCastModalContent(me))
-            return
-        }
-        if (game.state.stage % 2 === 0 && me.character === "杀手") {
-            setCastModalContent(genCastModalContent(me))
-        }
+        // if (game.state.stage === 1 &&
+        //     (me.character === "下毒者" ||
+        //     me.character === "占卜师" ||
+        //     me.character === "管家")) {
+        //     setCastModalContent(genCastModalContent(me))
+        //     return
+        // }
+        // if (game.state.stage % 2 === 1 && game.state.stage !== 1 &&
+        //     (me.character === "下毒者" ||
+        //         me.character === "僧侣" ||
+        //         me.character === "小恶魔" ||
+        //         me.character === "守鸦人" ||
+        //         me.character === "占卜师" ||
+        //         me.character === "管家")) {
+        //     setCastModalContent(genCastModalContent(me))
+        //     return
+        // }
+        // if (game.state.stage % 2 === 0 && me.character === "杀手") {
+        //     setCastModalContent(genCastModalContent(me))
+        // }
+        setCastModalContent(genCastModalContent(me))
     }
     const handleCastOk = () => {
         setIsCastModalOpen(false)
         // 后端判断 发动技能的条件是，取决于身份，drunk，白天黑夜，还有没有技能；前端随便发动，后端判断成不成功
         let me = getMe(game)
+        if (me.baseCharacter.character_name === "Gambler" && selectedCharacter && selectedPlayers.length === 1) {
+            let req = JSON.stringify({
+                action: "cast", 
+                targets: selectedPlayers,
+                extra: selectedCharacter // 传递选中的角色名称
+            })
+            socket.send(req)
+            setSelectedCharacter(null) // 重置选择
+            return
+        }
         if (!me.state.casted && !game.state.votingStep && game.state.stage !== 0 && game.state.night &&
             (castToPlayersId.length === 1 &&
-                (me.character === "下毒者" ||
-                me.character === "管家" ||
-                me.character === "僧侣" ||
-                me.character === "小恶魔" ||
-                me.character === "守鸦人")
+                (me.baseCharacter.character_name === "Assassin" ||
+                me.baseCharacter.character_name === "管家" ||
+                me.baseCharacter.character_name === "僧侣" ||
+                me.baseCharacter.character_name === "小恶魔" ||
+                me.baseCharacter.character_name === "守鸦人")
                 ||
                 (castToPlayersId.length === 2 &&
-                me.character === "占卜师")
+                me.baseCharacter.character_name === "占卜师")
             )) {
+            console.log("发动技能了")
             emitCast()
         }
+
         // 杀手可以在白天任何阶段开枪
         if (!me.state.casted && game.state.stage !== 0 && castToPlayersId.length === 1
-            && me.character === "杀手" && !game.state.night) {
+            && me.baseCharacter.character_name === "杀手" && !game.state.night) {
             emitCast()
         }
     }
@@ -656,7 +703,7 @@ function Gaming() {
             let content = "你确定要投票给玩家 "
             for (let j = 0; j < game.players.length; j++) {
                 if (game.nominated) {
-                    content += "<" + game.players[j].name + "> "
+                    content += "<" + game.nominated.name + "> "
                     break
                 }
             }
@@ -677,6 +724,22 @@ function Gaming() {
         if (game.state.votingStep && me.character !== "杀手") {
             return "投票阶段不能发动技能"
         }
+        // Gambler 特殊处理
+        if (me.baseCharacter.character_name === "Gambler") {
+            return (
+                <div>
+                    <p>请选择您要猜测的角色：</p>
+                    <Radio.Group onChange={(e) => setSelectedCharacter(e.target.value)} value={selectedCharacter}>
+                        <Space direction="vertical">
+                            {characterOptions.map((character, index) => (
+                                <Radio key={index} value={character}>{character}</Radio>
+                            ))}
+                        </Space>
+                    </Radio.Group>
+                </div>
+            )
+        }
+
         let selectedPlayersObj = []
         let content = "是否要对玩家 "
         for (let i = 0; i < selectedPlayers.length; i++) {
@@ -688,16 +751,13 @@ function Gaming() {
                 }
             }
         }
-        switch (me.character) {
-        case "下毒者":
-            if (!game.state.night) {
-                return "白天不能投毒"
-            }
+        switch (me.baseCharacter.character_name) {
+        case "Gambler":
             if (selectedPlayers.length === 1) {
-                content += "下毒吗？"
+                content += `猜测为 ${selectedCharacter || "未选择"} 角色吗？`
                 break
             }
-            return "您必须且只能选1个人下毒"
+            return "您只能选1个人进行猜测"
         case "占卜师":
             if (selectedPlayers.length === 2) {
                 content += "占卜，看看有没有恶魔吗？"
@@ -751,29 +811,29 @@ function Gaming() {
             }
             return "您只能选1个人反向通灵"
         case "Assassin":
-            if (game.state.night) {
-                return "夜晚不能开枪"
+            if (!game.state.night) {
+                return "白天不能开枪"
             }
-            if (game.executed) {
-                return "已发生处决，不能开枪"
-            }
+            // if (game.executed) {
+            //     return "已发生处决，不能开枪"
+            // }
             if (selectedPlayers.length === 1) {
-                content += "实行枪决吗？"
+                content += "实行刺杀吗？"
                 break
             }
-            return "您只能选1个人枪决"
+            return "您只能选1个人刺杀"
         }
         setCastToPlayersId(selectedPlayers)
         return content
     }
 
-    const endVotingStep = () => {
-        if (game && game.state.votingStep) {
-            emitEndVoting()
-        } else {
-            openEndVotingNotification("topRight")
-        }
-    }
+    // const endVotingStep = () => {
+    //     if (game && game.state.votingStep) {
+    //         emitEndVoting()
+    //     } else {
+    //         openEndVotingNotification("topRight")
+    //     }
+    // }
     const openEndVotingNotification = (placement) => {
         api.info({
             message: "非法点击",
@@ -788,8 +848,12 @@ function Gaming() {
     }, [game])
     const loadCurrentStage = () => {
         if (game) {
+            if (game.state.night){
+                setCurrentStep("晚上")
+                return
+            }
             if (game.state.stage === 0) {
-                setCurrentStep("本局未开始")
+                setCurrentStep("")
                 return
             }
             if (game.state.stage % 2 === 1) {
@@ -800,7 +864,7 @@ function Gaming() {
                 setCurrentStep("自由发言")
                 return
             }
-            if (game.state.stage % 2 === 0 && game.state.votingStep) {
+            if (game.state.stage % 2 === 1 && game.state.votingStep) {
                 setCurrentStep("投票处决")
             }
         }
@@ -898,8 +962,9 @@ function Gaming() {
                     { game
                         ?
                         <>
-                            <Button className="btn small-btn" onClick={toggleNight}>{iconSunMoon ? <SmileFilled /> : <SmileOutlined />}</Button>
-                            <Button className="btn small-btn" onClick={endVotingStep}><StopOutlined /></Button>
+                            {findPlayer().positionId === 1 && game.state.stage === 0 && <Button className="btn small-btn" onClick={emitCheckOutFirstNight}>开始游戏</Button>}
+                            <Button className="btn small-btn" onClick={toggleNight}>日夜翻转</Button>
+                            {findPlayer().positionId === 1 && <Button className="btn small-btn" onClick={emitExecute}>结束投票并处决</Button>}
                         </>
                         :
                         <></>
