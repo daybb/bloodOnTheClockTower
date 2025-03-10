@@ -42,10 +42,10 @@ func LoadHome(w http.ResponseWriter, r *http.Request) {
 			}
 			listRooms(reqBody.Payload, conn)
 		case "create_room":
-			//var reqBody model.CreateRoomReqBody
-			//if err = json.Unmarshal(p, &reqBody); err != nil {
-			//	log.Println("JSON unmarshal error:", err)
-			//}
+			var reqBody model.CreateRoomReqBody
+			if err = json.Unmarshal(p, &reqBody); err != nil {
+				log.Println("JSON unmarshal error:", err)
+			}
 			initDefaultRoom()
 		case "join_room":
 			var reqBody model.JoinRoomReqBody
@@ -74,10 +74,6 @@ func listRooms(playerId string, conn *websocket.Conn) {
 		log.Println("Write error:", err)
 		return
 	}
-	cfg.HomeConnPool.Range(func(key, value any) bool {
-		fmt.Printf("所有连接:%+v\n", key)
-		return true
-	})
 }
 
 // 点击创建房间创建一个默认房间
@@ -94,7 +90,7 @@ func initDefaultRoom() {
 		Init:         false,
 		Result:       "",
 		Log:          "",
-		Players:      []model.Player{},
+		Players:      nil,
 		State:        model.GameState{},
 		Executed:     nil,
 		Nominated:    nil,
@@ -104,11 +100,6 @@ func initDefaultRoom() {
 		GameConnPool: &sync.Map{},
 		Mux:          &sync.Mutex{},
 		ResMux:       &sync.Mutex{},
-	}
-	for i := range cfg.Rooms {
-		if cfg.Rooms[i].Id == room.Id {
-			return
-		}
 	}
 	room.Status = model.Wait
 	room.CreatedAt = time.Now().Format(time.RFC3339)
@@ -132,6 +123,7 @@ func initDefaultRoom() {
 	//	}
 	//	return true
 	//})
+	fmt.Println(cfg.Rooms)
 }
 
 // 加入默认房间 用户输入昵称和位置id
@@ -141,10 +133,23 @@ func joinRoomAndReady(joinRoomPayload model.JoinRoomPayload, conn *websocket.Con
 	defer CfgMutex.Unlock()
 
 	room, roomIndex := findRoom("2025")
+
+	//if room.Password != joinRoomPayload.Room.Password {
+	//	return
+	//}
+
+	//var hasCurrentPlayer bool
+	//for i, player := range room.Players {
+	//	if joinRoomPayload.Player.Id == player.Id {
+	//		cfg.Rooms[roomIndex].Players[i].Name = joinRoomPayload.Player.Name
+	//		hasCurrentPlayer = true
+	//		break
+	//	}
+	//}
 	msg, exclusive := nicknameAndPositionExclusive(joinRoomPayload.Player.Name, joinRoomPayload.Player.PositionId, *room)
 	if !exclusive {
 		//有重复的，需要发送对应消息到对应客户端
-		cfg.HomeConnPool.Range(func(id, conn any) bool {
+		room.GameConnPool.Range(func(id, conn any) bool {
 			if id == joinRoomPayload.Player.Id {
 				if err := conn.(*websocket.Conn).WriteMessage(websocket.TextMessage, []byte(msg)); err != nil {
 					log.Println("Write error:", err)
@@ -152,7 +157,7 @@ func joinRoomAndReady(joinRoomPayload model.JoinRoomPayload, conn *websocket.Con
 				}
 				return true
 			}
-			log.Println("still找不到匹配的")
+			log.Println("player id找不到匹配的")
 			return false
 		})
 		return
@@ -197,10 +202,10 @@ func joinRoomAndReady(joinRoomPayload model.JoinRoomPayload, conn *websocket.Con
 		}
 		return true
 	})
-	//ready := checkRoomStatus(room)
-	//if ready {
-	//	startGame(room)
-	//}
+	ready := checkRoomStatus(room)
+	if ready {
+		startGame(room)
+	}
 	//return ready
 }
 

@@ -3,7 +3,7 @@ package util
 import "bloodOnTheClockTower/model"
 
 // 判断角色是否醉酒
-func IsCharacterDrunk(character model.BaseCharacter) bool {
+func IsCharacterDrunk(character *model.BaseCharacter) bool {
 	if character.CharacterStatus == nil {
 		return false
 	}
@@ -11,7 +11,7 @@ func IsCharacterDrunk(character model.BaseCharacter) bool {
 }
 
 // 判断角色是否中毒
-func IsCharacterPoisoned(character model.BaseCharacter) bool {
+func IsCharacterPoisoned(character *model.BaseCharacter) bool {
 	if character.CharacterStatus == nil {
 		return false
 	}

@@ -10,13 +10,10 @@ import (
 // 只要你觉得合适，也可以多触发几次。
 // 在少见的情形下，为了让和平主义者看起来很可疑，你可以永不触发他的能力。
 // todo 研究什么时候触发，触发几次合适，先设置一局一次
-func ExecutedGoodStillLive(executedCharacter model.BaseCharacter) (string, bool) {
-	msg := ""
+func ExecutedGoodStillLive(executedCharacter *model.BaseCharacter) {
 	if executedCharacter.CharacterKind == model.Good || executedCharacter.CharacterKind == model.Outsider && model.OncePerGameSkillMap["Pacifist"] {
 		log.Println("和平主义者发动技能，被处决的好人仍然存活")
 		model.OncePerGameSkillMap["Pacifist"] = false
-		msg += "和平主义者发动技能，被处决的好人仍然存活\n"
-		return msg, false
+		return
 	}
-	return msg, true
 }

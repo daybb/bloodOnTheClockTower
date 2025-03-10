@@ -47,10 +47,10 @@ func LoadRoom(w http.ResponseWriter, r *http.Request) {
 		switch reqBody.Action {
 		case "list_players":
 			listPlayers(room, reqBody.Payload, conn)
-		//case "quit_room":
-		//	quitRoom(room, reqBody.Payload)
-		case "start_game":
-			startGame(room)
+			//case "quit_room":
+			//	quitRoom(room, reqBody.Payload)
+			//case "start_game":
+			//	startGame(room)
 			//case "review_game":
 			//	reviewGame(room, reqBody.Payload, conn)
 			//case "back_to_room":
@@ -95,7 +95,7 @@ func listPlayers(room *model.Room, playerId string, conn *websocket.Conn) {
 	}
 	room.GameConnPool.Range(func(id, conn any) bool {
 		if err = conn.(*websocket.Conn).WriteMessage(websocket.TextMessage, marshalRoom); err != nil {
-			log.Println("listPlayers Write error:", err)
+			log.Println("Write error:", err)
 			return false
 		}
 		return true

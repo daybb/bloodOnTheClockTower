@@ -33,18 +33,16 @@ type Room struct {
 	Id   string `json:"id"`
 	Name string `json:"name"`
 	//Password  string    `json:"password"`
-	Host          string            `json:"host"`
-	CreatedAt     string            `json:"createdAt"`
-	Status        string            `json:"status"` // 等待开始，游戏中，复盘中
-	Init          bool              `json:"init"`   // 房间是否已初始化身份
-	Result        string            `json:"result"` // 游戏结果
-	Log           string            `json:"log"`    // 总日志
-	Players       []Player          `json:"players"`
-	AllCharacters map[string]string `json:"allCharacters"` //游戏内所有玩家的角色[playerId:characterName]
-	State         GameState         `json:"state"`         // 游戏中各身份状态
-	Executed      *Player           `json:"executed"`      // 本轮被处决者
-	Nominated     *Player           `json:"nominated"`     // 当前投票环节被提名者
-	CurTime       int               `json:"curTime"`       //当前游戏时间 8=白天，17=黄昏，23=夜晚
+	Host      string    `json:"host"`
+	CreatedAt string    `json:"createdAt"`
+	Status    string    `json:"status"` // 等待开始，游戏中，复盘中
+	Init      bool      `json:"init"`   // 房间是否已初始化身份
+	Result    string    `json:"result"` // 游戏结果
+	Log       string    `json:"log"`    // 总日志
+	Players   []Player  `json:"players"`
+	State     GameState `json:"state"`     // 游戏中各身份状态
+	Executed  *Player   `json:"executed"`  // 本轮被处决者
+	Nominated *Player   `json:"nominated"` // 当前投票环节被提名者
 	// 技能施放池，存储所有施放技能人，当前阶段施放的技能作用目标
 	CastPool map[string][]string `json:"castPool"` // 本轮施法池 [playId][]targetId{}
 	VotePool map[string]int      `json:"votePool"` // 本轮票池 [playId]int{}
@@ -63,15 +61,15 @@ type GameState struct {
 }
 
 type Player struct {
-	Id            string        `json:"id"`
-	Name          string        `json:"name"`
-	Index         int           `json:"index"`
-	Waiting       bool          `json:"waiting"` // 是否等待开始
-	Quited        bool          `json:"quited"`  // 是否已经退出
-	State         PlayerState   `json:"state"`
-	Ready         PlayerReady   `json:"ready"`
-	Log           string        `json:"log"`
-	PositionId    int           `json:"positionId"`    // 位置id
+	Id            string      `json:"id"`
+	Name          string      `json:"name"`
+	Index         int         `json:"index"`
+	Waiting       bool        `json:"waiting"` // 是否等待开始
+	Quited        bool        `json:"quited"`  // 是否已经退出
+	State         PlayerState `json:"state"`
+	Ready         PlayerReady `json:"ready"`
+	Log           string      `json:"log"`
+	PositionId    int         `json:"positionId"` // 位置id
 	BaseCharacter BaseCharacter `json:"baseCharacter"` //角色信息
 }
 

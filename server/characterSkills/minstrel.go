@@ -2,35 +2,14 @@ package characterSkills
 
 import (
 	"bloodOnTheClockTower/model"
-	"bloodOnTheClockTower/util"
-	"log"
 )
 
 // 吟游诗人技能，当爪牙死于处决，除了本人和旅行者外所有玩家醉酒到明天黄昏
-// 白天早上8点-黄昏下午17点-夜晚晚上23点
+// 白天早上8点-黄昏下午17点-夜晚晚上21点
 // 发生时间一定是早上
-func DrunkenEveryone(executed *model.BaseCharacter, characters []*model.BaseCharacter, currentTime int) (string, bool) {
-	msg := ""
-	if !executed.IsDead {
+func DrunkenEveryone(executed *model.BaseCharacter, characters []*model.BaseCharacter, currentTime int) {
+	if executed.CharacterKind == model.Minion && executed.DeadReason == model.DeadReasonExecuted {
 		for i := range characters {
-			if characters[i].CharacterName == "Minstrel" {
-				if util.FindElementInSlice(model.PoisonedStatus, characters[i].CharacterStatus) {
-					if characters[i].CharacterStatus[model.PoisonedStatus] > currentTime {
-						log.Println("吟游诗人中毒状态，技能释放失败")
-						msg += "吟游诗人中毒状态，技能释放失败\n"
-						return msg, false
-					}
-				}
-				//刺客醉酒状态，技能发动失败，但技能已使用，所以失效
-				if util.FindElementInSlice(model.DrunkStatus, characters[i].CharacterStatus) {
-					if characters[i].CharacterStatus[model.DrunkStatus] > currentTime {
-						log.Println("吟游诗人醉酒状态，技能释放失败")
-						msg += "吟游诗人中毒状态，技能释放失败\n"
-						return msg, false
-					}
-				}
-				continue
-			}
 			//即使死亡也要上状态，以免复活
 			//如果角色已有醉酒状态，判断状态时长
 			if characters[i].CharacterStatus[model.DrunkStatus] != 0 && characters[i].CharacterStatus[model.DrunkStatus] < currentTime+33 {
@@ -41,8 +20,5 @@ func DrunkenEveryone(executed *model.BaseCharacter, characters []*model.BaseChar
 				characters[i].CharacterStatus[model.DrunkStatus] = currentTime + 33
 			}
 		}
-		msg = "吟游诗人给所有人加上醉酒状态，持续到明天黄昏\n"
-		return msg, true
 	}
-	return msg, false
 }
