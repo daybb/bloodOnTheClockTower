@@ -11,6 +11,25 @@
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     <title>血染钟楼线下辅助器</title>
+    <style>
+        /* Add styles to prevent focus issues with modals */
+        [aria-hidden="true"] * {
+            outline: none !important;
+            -webkit-tap-highlight-color: transparent !important;
+        }
+        
+        /* Ensure elements with tabindex don't retain focus when parent is hidden */
+        [aria-hidden="true"] [tabindex], 
+        [aria-hidden="true"] [role="button"],
+        [aria-hidden="true"] button,
+        [aria-hidden="true"] a,
+        [aria-hidden="true"] input,
+        [aria-hidden="true"] select,
+        [aria-hidden="true"] textarea {
+            pointer-events: none !important;
+            tabindex: -1 !important;
+        }
+    </style>
 </head>
 <body>
 <noscript>You need to enable JavaScript to run this app.</noscript>
@@ -18,5 +37,41 @@
     /(iPhone|iPad|iPhone OS|Phone|iPod|iOS)/i.test(navigator.userAgent)&&(head=document.getElementsByTagName('head'),viewport=document.createElement('meta'),viewport.name='viewport',viewport.content='target-densitydpi=device-dpi, width=480px, user-scalable=no',head.length>0&&head[head.length-1].appendChild(viewport));
 </script>
 <div id="root"></div>
+<script>
+    // Helper function to handle focus management
+    document.addEventListener('DOMContentLoaded', function() {
+        // Store the active element before a modal opens
+        window.lastActiveElement = null;
+        
+        // Monitor for aria-hidden changes
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'attributes' && 
+                    mutation.attributeName === 'aria-hidden' &&
+                    mutation.target.getAttribute('aria-hidden') === 'true') {
+                    
+                    // Force blur on any focused elements inside hidden containers
+                    const focusableElements = mutation.target.querySelectorAll(
+                        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+                    );
+                    
+                    focusableElements.forEach(el => {
+                        el.setAttribute('tabindex', '-1');
+                        if (document.activeElement === el) {
+                            el.blur();
+                        }
+                    });
+                }
+            });
+        });
+        
+        // Start observing the document with the configured parameters
+        observer.observe(document.body, { 
+            attributes: true, 
+            attributeFilter: ['aria-hidden'],
+            subtree: true
+        });
+    });
+</script>
 </body>
 </html>

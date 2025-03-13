@@ -15,5 +15,7 @@ func main() {
 	http.HandleFunc("/room/", handler.LoadRoom)
 	// 游戏中页
 	http.HandleFunc("/game/", handler.LoadGame)
+	//重置
+	//http.HandleFunc("/reset", handler.Reset)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

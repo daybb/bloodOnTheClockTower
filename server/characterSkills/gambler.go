@@ -12,6 +12,13 @@ func GamblerGuessSkill(target string, guess string, gambler *model.BaseCharacter
 	if gambler.IsDead {
 		return msg, false
 	}
+	//赌徒技能施放状态修改 fixme 需要优化
+	for i := range allCharacters {
+		if allCharacters[i].BaseCharacter.CharacterName == model.GoodCharacterMap[11] {
+			allCharacters[i].State.Casted = true
+			break
+		}
+	}
 	//赌徒猜错了，但是处于中毒或醉酒状态，无事发生
 	for i := range allCharacters {
 		if allCharacters[i].Id == target {
@@ -27,7 +34,7 @@ func GamblerGuessSkill(target string, guess string, gambler *model.BaseCharacter
 				//赌徒猜错了，死亡
 			} else {
 				log.Println("赌徒猜错，死亡")
-				allCharacters[i].BaseCharacter.IsDead = true
+				gambler.IsDead = true
 				msg += "赌徒猜错，死亡"
 				return msg, true
 			}

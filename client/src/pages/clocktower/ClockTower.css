@@ -1,0 +1,303 @@
+.clock-tower {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  transition: background-color 0.5s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 左侧玩家信息面板 */
+.player-info-panel {
+  position: fixed;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 250px;
+  z-index: 100;
+}
+
+.player-info-card {
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.info-item {
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+}
+
+.info-label {
+  font-weight: bold;
+  margin-right: 8px;
+  min-width: 70px;
+}
+
+.info-value {
+  color: #1890ff;
+  font-weight: 500;
+}
+
+.role-toggle {
+  margin-top: 5px;
+  margin-bottom: 15px;
+}
+
+/* 游戏信息样式 */
+.game-info {
+  text-align: center;
+  margin-bottom: 20px;
+  z-index: 10;
+}
+
+.game-info h1 {
+  font-size: 36px;
+  margin-bottom: 10px;
+  color: #d81e06;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.round-info {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.day-night-indicator {
+  padding: 5px 15px;
+  border-radius: 15px;
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* 玩家圆形布局样式 */
+.players-circle {
+  position: relative;
+  width: 80vw;
+  height: 80vw;
+  max-width: 800px;
+  max-height: 800px;
+  margin: 0 auto;
+}
+
+.player-seat {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  margin-left: -60px;
+  margin-top: -60px;
+  border-radius: 50%;
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  z-index: 1;
+  border: 3px solid transparent;
+}
+
+.player-seat:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.player-seat.selected {
+  border-color: #1890ff;
+  box-shadow: 0 0 15px #1890ff;
+}
+
+.death-status {
+  position: absolute;
+  bottom: 10px;
+  background-color: #ff4d4f;
+  color: white;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: bold;
+}
+
+.player-seat.dead {
+  background-color: rgba(245, 245, 245, 0.8);
+  opacity: 0.8;
+  box-shadow: 0 0 10px rgba(255, 77, 79, 0.5);
+  border: 2px dashed #ff4d4f;
+}
+
+.player-seat.nominated {
+  background-color: #ffe58f;
+}
+
+.player-name {
+  font-weight: bold;
+  font-size: 16px;
+  margin-bottom: 5px;
+}
+
+.player-role {
+  font-size: 14px;
+  color: #666;
+}
+
+.nomination-badge {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background-color: #ff4d4f;
+  color: white;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+/* 操作按钮样式 - 中央布局 */
+.center-action-buttons {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  z-index: 10;
+  background-color: rgba(255, 255, 255, 0.7);
+  padding: 20px;
+  border-radius: 50%;
+  width: 200px;
+  height: 200px;
+  justify-content: center;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+}
+
+.center-action-buttons button {
+  min-width: 120px;
+  height: 36px;
+  font-size: 14px;
+  border-radius: 18px;
+  margin: 0;
+}
+
+.center-action-buttons button.skill-used {
+  background-color: #d9d9d9;
+  color: rgba(0, 0, 0, 0.25);
+  border-color: #d9d9d9;
+  cursor: not-allowed;
+}
+
+/* 日志模块样式 */
+.layout.east {
+  position: fixed;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 300px;
+  max-height: 70vh;
+  overflow-y: auto;
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 15px;
+  z-index: 100;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.layout.east span {
+  display: block;
+  margin-bottom: 8px;
+}
+
+/* 高亮样式 */
+.highlight {
+  font-weight: bold;
+}
+
+.highlight-number {
+  color: #1890ff;
+}
+
+.highlight-player {
+  color: #722ed1;
+}
+
+.highlight-skill {
+  color: #13c2c2;
+}
+
+.highlight-skill-result {
+  color: #eb2f96;
+}
+
+.highlight-severe {
+  color: #f5222d;
+}
+
+.highlight-nominate {
+  color: #fa8c16;
+}
+
+.highlight-vote {
+  color: #52c41a;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .layout.east {
+    position: static;
+    transform: none;
+    width: 100%;
+    max-height: 200px;
+    margin-bottom: 20px;
+  }
+}
+@media (max-width: 768px) {
+  .players-circle {
+    width: 90vw;
+    height: 90vw;
+  }
+  
+  .player-seat {
+    width: 80px;
+    height: 80px;
+    margin-left: -40px;
+    margin-top: -40px;
+  }
+  
+  .player-name {
+    font-size: 14px;
+  }
+  
+  .player-role {
+    font-size: 12px;
+  }
+  
+  .center-action-buttons {
+    width: 160px;
+    height: 160px;
+    padding: 15px;
+  }
+  
+  .center-action-buttons button {
+    min-width: 100px;
+    height: 32px;
+    font-size: 12px;
+  }
+  
+  .player-info-panel {
+    position: static;
+    transform: none;
+    width: 100%;
+    margin-bottom: 20px;
+  }
+}

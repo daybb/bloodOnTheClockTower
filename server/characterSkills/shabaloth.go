@@ -13,6 +13,13 @@ import (
 // todo 研究何时复活玩家 最好只是让沙巴洛斯偶尔进行反刍。每局游戏一次，或者两次，通常已经足够了。
 func KillTwo(shabaloth *model.BaseCharacter, target []string, allCharacters []*model.Player, curTime int, timeNow int) (error, string) {
 	msg := ""
+	//沙巴洛斯技能施放状态修改 fixme 需要优化
+	for i := range allCharacters {
+		if allCharacters[i].BaseCharacter.CharacterName == model.DevilCharacterMap[3] {
+			allCharacters[i].State.Casted = true
+			break
+		}
+	}
 	//如果沙巴罗斯醉酒，技能失效
 	if util.FindElementInSlice(model.PoisonedStatus, shabaloth.CharacterStatus) {
 		if shabaloth.CharacterStatus[model.PoisonedStatus] > curTime {

@@ -36,19 +36,22 @@ func checkoutNight(mux *sync.Mutex, game *model.Room) {
 	}
 	// 结算第一夜信息
 	if game.State.Stage == 0 {
-		FirstNight(game)
+		//FirstNight(game)
 		msg := ""
-		msg += "今夜是 平安夜\n"
+		msg += "昨夜是 平安夜\n"
 		for i := range game.Players {
 			game.Players[i].Log += msg
 		}
 		game.Log += msg
+		game.State.Stage++
+		game.State.Night = false
+		game.CurTime = model.Morning
 		broadcast(game)
 		return
 	}
 	// 结算除第一夜信息
 	if game.Result == "" {
-		game.State.Night = true
+		game.State.Night = false
 		game.State.Stage += 1
 		msg := fmt.Sprintf("第%d天，入夜~\n", game.State.Day+1)
 		OtherNight(game)
@@ -57,11 +60,24 @@ func checkoutNight(mux *sync.Mutex, game *model.Room) {
 	}
 }
 
+// 白天切换到夜晚的时候重置所有技能施放状态
+func resetSkillCast(game *model.Room) {
+	for i := range game.Players {
+		if !game.Players[i].BaseCharacter.IsDead && (game.Players[i].BaseCharacter.CharacterName == "Gambler" || game.Players[i].BaseCharacter.CharacterName == "Shabaloth") {
+			game.Players[i].State.Casted = false
+		} else {
+			game.Players[i].State.Casted = true
+		}
+	}
+}
+
 func checkoutDay(mux *sync.Mutex, game *model.Room) {
 	mux.Lock()
 	defer mux.Unlock()
 	// 结算处决
 	execute(game)
+	// 重置技能施放状态
+	resetSkillCast(game)
 	// 结算本局
 	//checkout(game, game.Executed)
 }
@@ -162,6 +178,8 @@ func ShowDevilAndMinion(game *model.Room) (minionId []string, devilId []string) 
 func FirstNight(game *model.Room) {
 	// 恶魔和爪牙互相展示身份
 	ShowDevilAndMinion(game)
+	game.State.Night = true
+	game.CurTime = model.Night
 	// todo 水手技能
 	// todo 侍臣技能
 	// todo 教父技能
@@ -170,9 +188,21 @@ func FirstNight(game *model.Room) {
 	// todo 祖母技能
 	// todo 侍女技能
 	//游戏进度+1
-	game.State.Stage++
-	game.State.Night = false
-	game.CurTime = model.Morning
+	broadcast(game)
+	return
+}
+
+// 直接入夜
+func DirectToNight(game *model.Room) {
+	game.State.Night = true
+	game.CurTime = model.Night
+	game.Executed = nil
+	game.Nominated = nil
+	game.VotePool = map[string]int{}
+	game.VoteLogs = map[string]string{}
+	game.CurLogs = ""
+	game.Log += "入夜"
+	broadcast(game)
 	return
 }
 

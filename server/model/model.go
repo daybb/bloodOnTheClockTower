@@ -49,6 +49,7 @@ type Room struct {
 	CastPool map[string][]string `json:"castPool"` // 本轮施法池 [playId][]targetId{}
 	VotePool map[string]int      `json:"votePool"` // 本轮票池 [playId]int{}
 	VoteLogs map[string]string   `json:"voteLogs"` // 本轮票池日志 [playId]log{}
+	CurLogs  string              `json:"curLogs"`  // 本轮可以给所有人显示的日志
 	// 通信管理
 	GameConnPool *sync.Map   `json:"-"` // game长连接[playId]conn
 	Mux          *sync.Mutex `json:"-"` // 业务逻辑使用的锁

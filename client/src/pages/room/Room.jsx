@@ -171,7 +171,7 @@ function Room() {
                 <Button className="btn small-btn" onClick={quitRoom}>退出房间</Button>
                 { room
                     ?
-                    <Button className="btn small-btn start" type="primary" onClick={startGame}>开始游戏</Button>
+                    playerId  === "1" && <Button className="btn small-btn start" type="primary" onClick={startGame}>开始游戏</Button>
                     :
                     <></>
                 }

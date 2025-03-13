@@ -6,6 +6,7 @@ import NotFound from "../pages/notFound/NotFound"
 import Home from "../pages/home/Home"
 import HomeLayout from "../layouts/HomeLayout"
 import { HOME } from "../config/cstModule"
+import ClockTower from "../pages/clocktower/ClockTower"
 // import Room from "../pages/room/Room"
 // import Gaming from "../pages/gaming/Gaming"
 // import Review from "../pages/review/Review"
@@ -27,8 +28,9 @@ export default (
             <Route path="/room/:roomId" element={lazyLoad("pages/room/Room")}/>
             <Route path="/room/:roomId/:playerId" element={lazyLoad("pages/room/Room")}/>
             <Route path="/game/:roomId" element={lazyLoad("pages/gaming/Gaming")}/>
-            <Route path="/game/:roomId/:playerId" element={lazyLoad("pages/gaming/Gaming")}/>
+            <Route path="/game/:roomId/:playerId" element={lazyLoad("pages/clocktower/ClockTower")}/>
             <Route path="/review/:roomId" element={lazyLoad("pages/review/Review")}/>
+            <Route path="/clocktower" element={<ClockTower/>}/>
         </Route>
         <Route path="*" element={<NotFound/>}/>
     </Routes>

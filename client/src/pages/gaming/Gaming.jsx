@@ -1,14 +1,13 @@
 import {useNavigate, useParams} from "react-router-dom"
-import {Button, Modal, Switch, notification, Drawer,Radio, Space} from "antd"
+import {Button, Modal, Switch, notification, Drawer,Select} from "antd"
 import {FireOutlined, RollbackOutlined, ReadOutlined} from "@ant-design/icons"
-import React, {useEffect, useState, useMemo} from "react"
+import React, {useEffect, useState, useMemo, useRef} from "react"
 import "./Gaming.css"
 import {remove} from "../../utils/array"
 import {sleep} from "../../utils/time"
 import dayImg from "../../assets/images/bg/day.png"
 import nightImg from "../../assets/images/bg/night.png"
 import "../../utils/captcha/captcha.css"
-import {startCaptcha} from "../../utils/captcha/captcha.js"
 import Instruction from "./Instruction"
 import config from "../../config/config"
 
@@ -23,11 +22,13 @@ let civilWinAudio = new Audio("/audio/civil_win.wav")
 let evilWinAudio = new Audio("/audio/evil_win.wav")
 let castLock = false // 入夜后给施放技能的时间，后端没有，只在前端限制，因为只限制主机
 
+
 function Gaming() {
     // 添加 Gambler 角色的状态
     const [selectedCharacter, setSelectedCharacter] = useState(null)
+    const [hasGuessed, setHasGuessed] = useState(false) // 添加状态跟踪是否已经猜测过
     const characterOptions = [
-        "小恶魔", "间谍", "男爵", "下毒者", "刺客", 
+        "小恶魔", "间谍", "男爵", "下毒者", "刺客",
         "占卜师", "厨师", "共情者", "送葬者", "管家"
     ]
     const navigate = useNavigate()
@@ -38,6 +39,12 @@ function Gaming() {
     useEffect(() => {
         establishConn()
     }, [])
+    // 在游戏状态更新时重置猜测状态
+    useEffect(() => {
+        if (game && game.state.stage === 0) {
+            setHasGuessed(false) // 游戏重新开始时重置猜测状态
+        }
+    }, [game])
     const establishConn = () => {
         // 获取game 长连接
         socket = new WebSocket(`${config.beBaseUrl}/game/${roomId}/${sessionStorage.getItem("PlayerID")}`)
@@ -302,7 +309,7 @@ function Gaming() {
                     {game && findPlayer().character ?
                         (findPlayer().character === "Assassin" ? "刺杀" :
                             findPlayer().character === "Gambler" ? "猜角色" :
-                                findPlayer().character === "占卜师" ? "占卜" :
+                                findPlayer().character === "Shabaloth" ? "吞食" :
                                     findPlayer().character === "管家" ? "认主" :
                                         findPlayer().character === "僧侣" ? "守护" :
                                             findPlayer().character === "小恶魔" ? "杀害" :
@@ -383,6 +390,10 @@ function Gaming() {
             openNotification("topRight")
         }
     }
+    const directToNight =() =>{
+        let req = JSON.stringify({action: "direct_night", targets: []})
+        socket.send(req) // 会在后端更新stage、night
+    }
     const checkReadyToToggleNight = () => {
         //第一个白天可以不需要发动技能
         // 死亡或者已放过技能都是ready
@@ -399,12 +410,6 @@ function Gaming() {
 
     // 游戏过程
     const gameProcess = async (stage) => {
-        // TODO 语音- 请大家操作或输入验证码
-        if (stage % 2 === 1) {
-            wolfAudio.play() // 狼叫
-        } else if (stage % 2 === 0) {
-            cockAudio.play() // 鸡叫
-        }
         if (stage === 1) {
             castLock = true
             // 发送日夜切换指令到后端，后端重置状态
@@ -464,7 +469,7 @@ function Gaming() {
     }
     //首次入夜
     const emitCheckOutFirstNight = () => {
-        let req = JSON.stringify({action: "checkout_night", targets: []})
+        let req = JSON.stringify({action: "first_night", targets: []})
         socket.send(req) // 会在后端更新stage、night
     }
     //处决
@@ -574,6 +579,16 @@ function Gaming() {
 
     // 发动技能
     const cast = () => {
+        // 如果是 Gambler 且已经猜测过，则显示提示
+        const me = getMe(game)
+        if (me && me.baseCharacter.character_name === "Gambler" && hasGuessed) {
+            api.info({
+                message: "技能已使用",
+                description: "您本局游戏已经使用过猜测能力，每局只能猜测一次。",
+                placement: "topRight",
+            })
+            return
+        }
         showCastModal()
     }
     const [isCastModalOpen, setIsCastModalOpen] = useState(false)
@@ -608,15 +623,47 @@ function Gaming() {
         setIsCastModalOpen(false)
         // 后端判断 发动技能的条件是，取决于身份，drunk，白天黑夜，还有没有技能；前端随便发动，后端判断成不成功
         let me = getMe(game)
-        if (me.baseCharacter.character_name === "Gambler" && selectedCharacter && selectedPlayers.length === 1) {
-            let req = JSON.stringify({
-                action: "cast", 
-                targets: selectedPlayers,
-                extra: selectedCharacter // 传递选中的角色名称
-            })
-            socket.send(req)
-            setSelectedCharacter(null) // 重置选择
+        //沙巴螺丝攻击判定
+        switch (me.baseCharacter.character_name){
+        case "Shabaloth":
+            console.log("select: ",selectedPlayers.length,selectedCharacter)
+            if (selectedCharacter && selectedPlayers.length === 2){
+                let req = JSON.stringify({
+                    action: "cast",
+                    targets: selectedPlayers,
+                })
+                socket.send(req)
+                setSelectedCharacter(null) // 重置选择
+                return
+            }else {
+                api.info({
+                    message: "请选择两名玩家。",
+                    description: "请选择两名玩家。",
+                    placement: "topRight",
+                })
+            }
             return
+        case "Gambler":
+            if (hasGuessed) {
+                api.info({
+                    message: "技能已使用",
+                    description: "您本局游戏已经使用过猜测能力，每局只能猜测一次。",
+                    placement: "topRight",
+                })
+                return
+            }
+            if (selectedCharacter && selectedPlayers.length === 1){
+                let req = JSON.stringify({
+                    action: "cast",
+                    targets: selectedPlayers,
+                    extra: selectedCharacter // 传递选中的角色名称
+                })
+                socket.send(req)
+                setSelectedCharacter(null) // 重置选择
+                setHasGuessed(true) // 标记已经猜测过
+                return
+            }
+
         }
         if (!me.state.casted && !game.state.votingStep && game.state.stage !== 0 && game.state.night &&
             (castToPlayersId.length === 1 &&
@@ -715,6 +762,13 @@ function Gaming() {
 
     // 产生技能施放Modal的内容
     const genCastModalContent = (me) => {
+        const [isHidden] = useState(false)
+        const inputRef = useRef(null)
+        useEffect(() => {
+            if (isHidden && inputRef.current) {
+                inputRef.current.blur() // 隐藏时让输入框失去焦点
+            }
+        }, [isHidden])
         if (game.state.stage === 0) {
             return "本局未开始，不能发动技能"
         }
@@ -725,17 +779,34 @@ function Gaming() {
             return "投票阶段不能发动技能"
         }
         // Gambler 特殊处理
+        // Gambler 特殊处理
         if (me.baseCharacter.character_name === "Gambler") {
+            if (hasGuessed) {
+                return "您本局游戏已经使用过猜测能力，每局只能猜测一次。"
+            }
+            
             return (
-                <div>
+                <div 
+                    style={{ display: isHidden ? "none" : "block" }}
+                    aria-hidden={isHidden}
+                >
                     <p>请选择您要猜测的角色：</p>
-                    <Radio.Group onChange={(e) => setSelectedCharacter(e.target.value)} value={selectedCharacter}>
-                        <Space direction="vertical">
-                            {characterOptions.map((character, index) => (
-                                <Radio key={index} value={character}>{character}</Radio>
-                            ))}
-                        </Space>
-                    </Radio.Group>
+                    <Select 
+                        ref={inputRef}
+                        style={{ width: "100%" }}
+                        value={selectedCharacter}
+                        onChange={(value) => setSelectedCharacter(value)}
+                        options={characterOptions.map((character) => ({
+                            value: character,
+                            label: character
+                        }))}
+                        // 当元素隐藏时自动失去焦点
+                        onBlur={() => {
+                            if(isHidden && inputRef.current) {
+                                inputRef.current.blur()
+                            }
+                        }}
+                    />
                 </div>
             )
         }
@@ -758,58 +829,12 @@ function Gaming() {
                 break
             }
             return "您只能选1个人进行猜测"
-        case "占卜师":
+        case "Shabaloth":
             if (selectedPlayers.length === 2) {
                 content += "占卜，看看有没有恶魔吗？"
                 break
             }
             return "您只能选2个人占卜"
-        case "管家":
-            if (!game.state.night) {
-                return "白天不能认主"
-            }
-            for (let i = 0; i < selectedPlayersObj.length; i++) {
-                if (selectedPlayersObj[i].character === "管家") {
-                    return "您不能认主自己"
-                }
-            }
-            if (selectedPlayers.length === 1) {
-                content += "认主？他投你可选投，他不投你投无效。"
-                break
-            }
-            return "您只能选1个人认主"
-        case "僧侣":
-            if (!game.state.night) {
-                return "白天不能守护"
-            }
-            for (let i = 0; i < selectedPlayersObj.length; i++) {
-                if (selectedPlayersObj[i].character === "僧侣") {
-                    return "您不能守护自己"
-                }
-            }
-            if (selectedPlayers.length === 1) {
-                content += "进行守护吗？"
-                break
-            }
-            return "您只能选1个人守护"
-        case "小恶魔":
-            if (!game.state.night) {
-                return "白天不能杀害"
-            }
-            if (selectedPlayers.length === 1) {
-                content += "进行杀害吗？"
-                break
-            }
-            return "您只能选1个人杀害"
-        case "守鸦人":
-            if (!game.state.night) {
-                return "白天不能反向通灵"
-            }
-            if (selectedPlayers.length === 1) {
-                content += "进行反向通灵吗？"
-                break
-            }
-            return "您只能选1个人反向通灵"
         case "Assassin":
             if (!game.state.night) {
                 return "白天不能开枪"
@@ -827,13 +852,6 @@ function Gaming() {
         return content
     }
 
-    // const endVotingStep = () => {
-    //     if (game && game.state.votingStep) {
-    //         emitEndVoting()
-    //     } else {
-    //         openEndVotingNotification("topRight")
-    //     }
-    // }
     const openEndVotingNotification = (placement) => {
         api.info({
             message: "非法点击",
@@ -848,19 +866,19 @@ function Gaming() {
     }, [game])
     const loadCurrentStage = () => {
         if (game) {
+            if (game.state.stage === 0 && !game.state.night) {
+                setCurrentStep("当前还未开始")
+                return
+            }
+            if (game.state.night && game.state.stage === 0){
+                setCurrentStep("当前第一夜，恶魔和爪牙互认，大家各自确认信息，玩手机")
+                return
+            }
             if (game.state.night){
-                setCurrentStep("晚上")
+                setCurrentStep("晚上，可以进行技能施放，注意施放顺序")
                 return
             }
-            if (game.state.stage === 0) {
-                setCurrentStep("")
-                return
-            }
-            if (game.state.stage % 2 === 1) {
-                setCurrentStep("技能施放")
-                return
-            }
-            if (game.state.stage % 2 === 0 && !game.state.votingStep) {
+            if (game.state.stage % 2 === 1 && !game.state.votingStep) {
                 setCurrentStep("自由发言")
                 return
             }
@@ -877,69 +895,6 @@ function Gaming() {
             setBgImg(game.state.stage % 2 === 1 ? nightImg : dayImg)
         }
     }
-
-    // 验证码
-    const [isCaptchaModalOpen, setIsCaptchaModalOpen] = useState(false)
-    useEffect(() => {
-        let container = document.getElementById("CaptchaModal")
-        if (container) {
-            let box = document.querySelector(".box")
-            let titbox = document.querySelector(".tit-box")
-            let fls = document.querySelectorAll(".fl")
-            let radios = document.querySelectorAll(".radio")
-            startCaptcha(box, titbox, fls, radios, container, (success) => {
-                setIsCaptchaModalOpen(!success)
-            })
-        }
-    }, [isCaptchaModalOpen])
-    useEffect(() => {
-        // 弹出验证码
-        showCaptchaModal()
-    }, [game && game.state.night])
-    const showCaptchaModal = () => {
-        if (game) {
-            let me = getMe(game)
-            if (game.state.night && !me.state.dead) {
-                let firstNight = false
-                if (game.state.stage ===1 ) {
-                    firstNight = true
-                }
-                for (let i = 0; i < game.players.length; i++) {
-                    let open = false
-                    if (game.players[i].id === localStorage.getItem("PlayerID")) {
-                        if (game.players[i].character !== "下毒者"
-                            && game.players[i].character !== "占卜师"
-                            && game.players[i].character !== "管家") {
-                            open = true
-                        }
-                        if ((game.players[i].character === "小恶魔"
-                                || game.players[i].character === "僧侣"
-                                || game.players[i].character === "守鸦人")
-                            && firstNight) {
-                            open = true
-                        }
-                        if ((game.players[i].character === "小恶魔"
-                                || game.players[i].character === "僧侣"
-                                || game.players[i].character === "守鸦人")
-                            && !firstNight) {
-                            open = false
-                        }
-                        if (open) {
-                            setIsCaptchaModalOpen(true)
-                            break
-                        }
-                    }
-                }
-            } else {
-                setIsCaptchaModalOpen(false)
-            }
-        }
-    }
-    // TODO 测试代码 开始
-    // const handleCaptchaCancel = () => {
-    //     setIsCaptchaModalOpen(false)
-    // }
-    // TODO 测试代码 结束
 
     // 游戏说明
     const [open, setOpen] = useState(false)
@@ -962,8 +917,9 @@ function Gaming() {
                     { game
                         ?
                         <>
-                            {findPlayer().positionId === 1 && game.state.stage === 0 && <Button className="btn small-btn" onClick={emitCheckOutFirstNight}>开始游戏</Button>}
-                            <Button className="btn small-btn" onClick={toggleNight}>日夜翻转</Button>
+                            {findPlayer().positionId === 1 && game.state.stage === 0 && !game.state.night && <Button className="btn small-btn" onClick={emitCheckOutFirstNight}>进入第一夜</Button>}
+                            {findPlayer().positionId === 1 && <Button className="btn small-btn" onClick={toggleNight}>日夜翻转</Button>}
+                            {findPlayer().positionId === 1 && <Button className="btn small-btn" onClick={directToNight}>无投票和处决，入夜</Button>}
                             {findPlayer().positionId === 1 && <Button className="btn small-btn" onClick={emitExecute}>结束投票并处决</Button>}
                         </>
                         :
@@ -1000,22 +956,6 @@ function Gaming() {
             <Context.Provider value={contextValue}>
                 {contextHolder}
             </Context.Provider>
-            <Modal title="验证码" open={isCaptchaModalOpen}
-                // onCancel={handleCaptchaCancel}
-                footer={null}>
-                <div id="CaptchaModal">
-                    {isCaptchaModalOpen ?
-                        <div className="verify-box">
-                            <div className="box">
-                                <div className="bg-blur"></div>
-                            </div>
-                            <div className="tit-box"></div>
-                        </div>
-                        :
-                        <></>
-                    }
-                </div>
-            </Modal>
             <Drawer
                 title="游戏说明书"
                 placement="top"

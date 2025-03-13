@@ -59,10 +59,11 @@ func LoadGame(w http.ResponseWriter, r *http.Request) {
 		switch actionReq.Action {
 		//host点击load game开始游戏
 		case "load_game":
+			fmt.Println("load game now")
 			initGame(mux, game, playerId, conn)
 		//玩家发动技能
 		case "cast":
-			cast(mux, game, playerId, actionReq.Targets)
+			cast(mux, game, playerId, actionReq.Targets, actionReq.Extra)
 		//玩家发动提名
 		//提名-投票-结束投票-提名-投票-结束投票.....
 		case "nominate":
@@ -70,12 +71,17 @@ func LoadGame(w http.ResponseWriter, r *http.Request) {
 		//提名后发起投票
 		case "vote":
 			vote(mux, game, playerId)
-		//入夜，包括第一夜
+		//入夜
 		case "checkout_night":
 			//if playerId == "1" {
 			checkoutNight(mux, game)
-			//}
-		//公投结束之后进行处决
+		//}
+		case "first_night":
+			FirstNight(game)
+		//直接入夜
+		case "direct_night":
+			DirectToNight(game)
+			//公投结束之后进行处决
 		case "execute":
 			//if playerId == "1" {
 			checkoutDay(mux, game)
@@ -189,6 +195,8 @@ func initGame(mux *sync.Mutex, game *model.Room, playerId string, conn *websocke
 			newPlayer.Ready.Nominate = true
 			newPlayer.Ready.Nominated = true
 			newPlayer.Ready.Vote = true
+			//首轮都不需要发动技能
+			newPlayer.State.Casted = true
 			game.Players[i] = newPlayer
 		}
 		// 初始化玩家状态 依赖身份

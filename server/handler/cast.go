@@ -8,7 +8,7 @@ import (
 )
 
 // 前端控制技能发动顺序
-func cast(mux *sync.Mutex, game *model.Room, playerId string, targets []string) {
+func cast(mux *sync.Mutex, game *model.Room, playerId string, targets []string, extra string) {
 	mux.Lock()
 	defer mux.Unlock()
 
@@ -35,18 +35,21 @@ func cast(mux *sync.Mutex, game *model.Room, playerId string, targets []string) 
 		return
 		// 赌徒发动
 	case "Gambler":
+		//是否成功应该是白天来确定的
 		var dead bool
 		var pos int
-		msgAll, dead = characterSkills.GamblerGuessSkill(targets[0], targets[1], characterToCast, allCharacters)
+		var curLog string
+		msgAll, dead = characterSkills.GamblerGuessSkill(targets[0], extra, characterToCast, allCharacters)
 		for i := range game.Players {
 			if game.Players[i].Id == targets[0] {
 				pos = game.Players[i].PositionId
 			}
 		}
+		msgPlayer += fmt.Sprintf("发动技能，赌%v的身份是%v", pos, extra)
 		if dead {
-			msgPlayer += fmt.Sprintf("发动技能，赌%v的身份是%v，结果死亡", pos, targets[1])
+			curLog += fmt.Sprintf("发动技能，赌%v的身份是%v，结果死亡", pos, extra)
 		} else {
-			msgPlayer += fmt.Sprintf("发动技能，赌%v的身份是%v，结果无事发生", pos, targets[1])
+			curLog += fmt.Sprintf("发动技能，赌%v的身份是%v，结果无事发生", pos, extra)
 		}
 		// 魔鬼代言人发动（暂无）
 	case "DevilsAdvocate":
